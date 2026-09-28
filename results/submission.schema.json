@@ -56,10 +56,16 @@
             "properties": {
               "success": { "type": "boolean" },
               "invalid": { "type": "boolean" },
+              "object_id": { "enum": ["tennis_ball", "rubiks_cube_3x3", "whiteboard_marker"] },
               "metrics": {
                 "type": "object",
                 "additionalProperties": false,
-                "properties": { "completion_time_s": { "type": "number", "minimum": 0 } }
+                "properties": {
+                  "completion_time_s": { "type": "number", "minimum": 0 },
+                  "key_events": { "type": "array", "items": { "type": "string" } },
+                  "notes": { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 127 } },
+                  "velocities": { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 127 } }
+                }
               }
             }
           }
