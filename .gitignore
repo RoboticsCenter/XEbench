@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+runs/
+results/*.json
+!results/README.md
+dist/
+build/
+*.egg-info/
+.ruff_cache/

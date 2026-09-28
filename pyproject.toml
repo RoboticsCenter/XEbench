@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rc-dexbench"
+version = "0.1.0"
+description = "An open benchmark and evaluation toolkit for dexterous robotic hands."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "Robotics Center" }]
+keywords = ["robotics", "dexterous-manipulation", "benchmark", "tactile", "evaluation"]
+dependencies = ["httpx>=0.27", "mcap>=1.2"]
+
+[project.scripts]
+dexbench = "dexbench.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/RoboticsCenter/dexbench"
+Issues = "https://github.com/RoboticsCenter/dexbench/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dexbench"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use RC DexBench, please cite this software."
+title: "RC DexBench: An Open Benchmark for Dexterous Robot Evaluation"
+type: software
+authors:
+  - name: Robotics Center
+version: 0.1.0
+date-released: 2026-09-27
+url: "https://github.com/RoboticsCenter/dexbench"
+license: Apache-2.0

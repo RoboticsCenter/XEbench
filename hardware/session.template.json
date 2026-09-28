@@ -1,0 +1,43 @@
+{
+  "session_id": "",
+  "date": "YYYY-MM-DD",
+  "operator": "",
+  "hardware": {
+    "glove_model_serial": "",
+    "hand_model_serial": "",
+    "arm_model_serial": "",
+    "tracker_serials": [],
+    "camera_serials": []
+  },
+  "calib_id": "",
+  "calibration": {
+    "glove": "",
+    "camera_intrinsics_extrinsics": "",
+    "tracker_map_id": "",
+    "tracker_to_wrist": null,
+    "tracker_to_robot_base": null
+  },
+  "sync": {
+    "reference_channel": "/camera/d435",
+    "method": "",
+    "offset_ms_by_channel": {},
+    "residual_ms_by_channel": {},
+    "alignment": {
+      "channel": {
+        "index": [],
+        "time_diff_ms": []
+      }
+    }
+  },
+  "frames": {
+    "world": "",
+    "robot_base": "",
+    "camera_frames": []
+  },
+  "task": {
+    "task_id": "",
+    "object_list": [],
+    "success_criteria_version": ""
+  },
+  "run_type": "benchmark"
+}
