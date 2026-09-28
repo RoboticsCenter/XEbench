@@ -57,7 +57,7 @@ Common topics:
 | `/dexbench/actions` | policy action and step | DexBench runner |
 | `/dexbench/policy_trace` | model, request, response | Example LLM policy |
 
-One `.mcap` contains one trial and all available channels. One `results.json` contains the policy/task group summary and references each trial file. Use `run_type=benchmark` and keep every success, failure, and invalid hardware trial. Dataset exports are separate: they contain successful episodes only and use `run_type=dataset`.
+One `.mcap` contains one benchmark trial and all available channels. One `results.json` contains the policy/task group summary and references each trial file. Keep every success, failure, and invalid hardware trial; mark hardware faults invalid with a reason.
 
 ## Trial protocol
 

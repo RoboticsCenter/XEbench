@@ -3,15 +3,14 @@
   "date": "YYYY-MM-DD",
   "operator": "",
   "hardware": {
-    "glove_model_serial": "",
     "hand_model_serial": "",
     "arm_model_serial": "",
+    "keyboard_model_serial": "",
     "tracker_serials": [],
     "camera_serials": []
   },
   "calib_id": "",
   "calibration": {
-    "glove": "",
     "camera_intrinsics_extrinsics": "",
     "tracker_map_id": "",
     "tracker_to_wrist": null,

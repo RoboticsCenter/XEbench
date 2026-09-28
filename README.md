@@ -6,13 +6,13 @@ DexBench measures finger-level contact and force control, plus fixed-scene arm-a
 
 ## Tasks
 
-| Task | Goal | Trials per policy | Automatic outcome |
-| --- | --- | ---: | --- |
-| `keypress-ldr` | Index, middle, ring press LEFT → DOWN → RIGHT | 20 | Dedicated USB keyboard events |
-| `piano-seq` | Play MIDI notes 60 → 62 → 64 with even, medium force | 20 | MIDI note, timestamp, and velocity events |
-| `pick-place-ab` | Move a tennis ball, 3×3 cube, or capped whiteboard marker from zone A into a tray | 10 per object (30 total) | Tray region, hand release, and stability signals |
+| Task | Goal | Trials per policy | Setup | Automatic outcome |
+| --- | --- | ---: | --- | --- |
+| `keypress-ldr` | Index, middle, ring press LEFT → DOWN → RIGHT | 20 | [Rig setup](hardware/keypress-ldr.md) | Dedicated USB keyboard events |
+| `piano-seq` | Play MIDI notes 60 → 62 → 64 with even, medium force | 20 | [Rig setup](hardware/piano-seq.md) | MIDI note, timestamp, and velocity events |
+| `pick-place-ab` | Move a tennis ball, 3×3 cube, or capped whiteboard marker from zone A into a tray | 10 per object (30 total) | [Rig setup](hardware/pick-place-ab.md) | Tray region, hand release, and stability signals |
 
-Task protocols and measurable outcomes are in [SPEC.md](SPEC.md). Physical setup and per-session recording fields are in [hardware/](hardware/) and [docs/data_and_scoring.md](docs/data_and_scoring.md).
+Task protocols and measurable outcomes are in [SPEC.md](SPEC.md). See [recordings and scoring](docs/recordings-and-scoring.md) for benchmark result files and clock alignment.
 
 ## Task clips and rig photo
 
@@ -103,9 +103,8 @@ For piano-seq, report each note's MIDI velocity, within-trial velocity standard 
 
 - [Connect a hand or rig](docs/add_an_adapter.md)
 - [Add a task](docs/write_a_task.md)
-- [Data channels, clocks, and scoring](docs/data_and_scoring.md)
+- [Recordings and scoring](docs/recordings-and-scoring.md)
 - [Hardware reference sheets](hardware/)
-- [Glove demonstration data setup](hardware/todo1.md)
 
 The command-line workflow is native to DexBench. Its packaging and benchmark workflow take inspiration from [Inspect Robots](https://github.com/robocurve/inspect-robots), [WorldEvals](https://github.com/robocurve/worldevals), and [StationeryBench](https://github.com/robocurve/stationerybench), while remaining independent so tactile and contact-event channels are part of its own event and scoring contract.
 
