@@ -46,8 +46,8 @@ Common topics:
 | Topic | Example fields | Source |
 | --- | --- | --- |
 | `/hand/command` | `finger`, commanded position/effort, `pressed` | Hand command |
-| `/hand/state` | joint positions, open pose, contact state | Hand feedback |
-| `/hand/tactile` | tactile array or summarized force in N | Hand tactile sensor |
+| `/hand/state` | joint positions, open pose, `open` boolean | Hand feedback |
+| `/hand/tactile` | tactile array; optional `force_n` summary for MIDI correlation | Hand tactile sensor |
 | `/keyboard/events` | `kind=key_down`, `key` | USB keyboard hardware |
 | `/midi/events` | `kind=note_on`, `note`, `velocity` | MIDI keyboard hardware |
 | `/arm/command`, `/arm/state` | command/state and units | Arm controller |
@@ -56,6 +56,8 @@ Common topics:
 | `/scorer/tray_state` | `object_inside`, `stable_duration_s` | Depth + color scorer |
 | `/dexbench/actions` | policy action and step | DexBench runner |
 | `/dexbench/policy_trace` | model, request, response | Example LLM policy |
+
+Scorers require these event fields: keyboard `key` values are uppercase `LEFT`, `DOWN`, or `RIGHT`; MIDI `note` and `velocity` are integers; `/hand/command` uses `finger` and `pressed`; `/hand/state` uses `open` as a boolean; `/scorer/tray_state` uses boolean `object_inside` and numeric `stable_duration_s`. Put fields inside the event's `data` object. Emit `/dexbench/invalid` with a `reason` string for hardware faults.
 
 One `.mcap` contains one benchmark trial and all available channels. One `results.json` contains the policy/task group summary and references each trial file. Keep every success, failure, and invalid hardware trial; mark hardware faults invalid with a reason.
 

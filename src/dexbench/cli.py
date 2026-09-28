@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import statistics
 import sys
@@ -25,8 +26,18 @@ from dexbench.recording import read_mcap_events, write_json, write_mcap
 from dexbench.tasks import OBJECT_GRASP_TYPE, TASKS, score_trial
 
 
-def _policy(name: str, args: argparse.Namespace) -> Policy:
+def _policy(name: str, args: argparse.Namespace, session_metadata: dict[str, Any]) -> Policy:
     """Construct one of the included policies."""
+    if name == "custom":
+        if not args.policy_factory:
+            raise ValueError("Custom policies require --policy-factory package.module:factory")
+        module_name, separator, attribute_name = args.policy_factory.partition(":")
+        if not separator:
+            raise ValueError("Policy factory must be package.module:factory")
+        factory = getattr(importlib.import_module(module_name), attribute_name)
+        return factory(session_metadata)
+    if args.policy_factory:
+        raise ValueError("--policy-factory applies only with --policy custom")
     if name == "scripted":
         return ScriptedKeyboardPolicy()
     if name == "llm":
@@ -183,7 +194,6 @@ def _run(args: argparse.Namespace) -> int:
         )
         args.replay_from = str((results_path.parent / source["mcap"]).resolve())
         args.replay_source_trial_id = source["trial_id"]
-    policy = _policy(args.policy, args)
     session_metadata = {}
     if args.session_metadata:
         session_metadata = json.loads(Path(args.session_metadata).read_text(encoding="utf-8"))
@@ -207,6 +217,7 @@ def _run(args: argparse.Namespace) -> int:
         current_hardware = session_metadata.get("hardware")
         if source_hardware != current_hardware:
             raise ValueError("Replay and teleop session hardware metadata must match")
+    policy = _policy(args.policy, args, session_metadata)
     adapter = (
         MockKeyboardAdapter()
         if args.adapter == "mock"
@@ -418,7 +429,10 @@ def build_parser() -> argparse.ArgumentParser:
     run_parser = commands.add_parser("run", help="run a benchmark policy on an adapter")
     run_parser.add_argument("--task", required=True, choices=TASKS)
     run_parser.add_argument(
-        "--policy", required=True, choices=("scripted", "llm", "teleop", "replay")
+        "--policy", required=True, choices=("scripted", "llm", "teleop", "replay", "custom")
+    )
+    run_parser.add_argument(
+        "--policy-factory", help="custom policy factory as package.module:factory"
     )
     run_parser.add_argument(
         "--adapter", default="mock", help="mock or Python module:factory adapter"

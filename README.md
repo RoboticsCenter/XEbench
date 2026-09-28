@@ -52,9 +52,11 @@ dexbench score --task keypress-ldr --mcap runs/<run-id>/trial-001.mcap
 
 The scripted policy and mock adapter generate synthetic events to demonstrate the recording and scoring workflow.
 
+Real-robot runs use an adapter for the hand, sensors, and arm in the configured rig. See [Connect a hand or rig](docs/add_an_adapter.md) for the adapter interface.
+
 ## LLM example policy
 
-The example LLM policy uses GPT-6 Astra through the OpenAI Chat Completions API. It returns one bounded `press` action at a time for `index`, `middle`, or `ring`; the adapter maps that action to the robot's configured finger motion. See the [GPT-6 Astra API documentation](https://developers.openai.com/api/docs/models/gpt-6-astra).
+The built-in GPT-6 Astra policy is an example for `keypress-ldr`. It uses the OpenAI Chat Completions API and returns one bounded `press` action at a time for `index`, `middle`, or `ring`; the adapter maps that action to the robot's configured finger motion. Use a [custom policy factory](docs/add_an_adapter.md#add-a-task-policy) for `piano-seq`, `pick-place-ab`, or another policy. See the [GPT-6 Astra API documentation](https://developers.openai.com/api/docs/models/gpt-6-astra).
 
 ```bash
 export DEXBENCH_LLM_BASE_URL="https://api.openai.com/v1"
