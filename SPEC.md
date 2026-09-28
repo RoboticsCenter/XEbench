@@ -1,6 +1,6 @@
 # RC DexBench Interface and Scoring Specification
 
-Version 0.1.0 — English implementation of RC DexBench v2, operating specification version 1.4 (2026-09-26)
+Version 0.1.0
 
 This repository implements the benchmark workflow and reference scorers from the RC DexBench operating specification. Physical task definitions are fixed before a baseline run. Record actual dimensions, model numbers, settings, calibration, and photos in each hardware/session record. Do not tune the task after inspecting results.
 
@@ -90,4 +90,4 @@ Use three objects: a standard tennis ball (about 6.7 cm, whole-hand grasp), a st
 
 ## Results and baselines
 
-Report one group JSON and every trial MCAP. Teleop is the human upper-bound reference. Replay is the system-repeatability/latency-floor reference. Learned-policy results remain open until measured. Mock and scripted outcomes are pipeline demonstrations and are not comparable benchmark scores.
+Write one group JSON and one MCAP per trial. Teleoperation provides the human reference, replay measures system repeatability, and learned policies are evaluated against the same task metrics. The scripted policy and mock adapter provide deterministic examples of the recording and scoring workflow.

@@ -1,3 +1,3 @@
-# Results
+# Publishing results
 
-No physical DexBench results have been collected in this repository yet. Put future policy-run summaries and their MCAP trial recordings here or publish a release/artifact with the same files. Include failures and invalid-trial reasons; do not replace this notice with mock results.
+For each run, report the task, policy and model, success rate, completion time, hardware configuration, calibration ID, and links to the group `results.json` and trial MCAPs. Keep all trials, including failures. Mark hardware faults invalid and include the reason. Publish larger recordings as a GitHub release or an archive and link them here.

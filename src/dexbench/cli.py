@@ -233,6 +233,7 @@ def _run(args: argparse.Namespace) -> int:
         "policy_config": {
             "model": getattr(policy, "model", None),
             "endpoint": getattr(policy, "base_url", None),
+            "reasoning_effort": getattr(policy, "reasoning_effort", None),
         },
     }
     if isinstance(policy, ReplayPolicy):

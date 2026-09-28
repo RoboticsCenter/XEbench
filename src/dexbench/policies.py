@@ -51,7 +51,8 @@ class OpenAICompatiblePolicy:
         """Read endpoint, credential, and model from environment variables."""
         self.base_url = os.environ.get("DEXBENCH_LLM_BASE_URL", "https://api.openai.com/v1")
         self.api_key = os.environ.get("DEXBENCH_LLM_API_KEY") or os.environ.get("OPENAI_API_KEY")
-        self.model = os.environ.get("DEXBENCH_LLM_MODEL", "gpt-4.1-mini")
+        self.model = os.environ.get("DEXBENCH_LLM_MODEL", "gpt-6-astra")
+        self.reasoning_effort = os.environ.get("DEXBENCH_LLM_REASONING_EFFORT", "low")
         self.last_trace: dict[str, Any] = {}
         if not self.api_key:
             raise ValueError(
@@ -74,7 +75,7 @@ class OpenAICompatiblePolicy:
         ]
         payload = {
             "model": self.model,
-            "temperature": 0,
+            "reasoning_effort": self.reasoning_effort,
             "response_format": {"type": "json_object"},
             "messages": [
                 {

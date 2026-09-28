@@ -2,11 +2,7 @@
 
 RC DexBench is an open benchmark and evaluation toolkit for dexterous robotic hands. It defines tasks, hardware and session metadata, event-based scoring, and a common adapter interface so teams can compare teleoperation, replay, and learned policies with the same protocol.
 
-The task list follows the latest RC DexBench v2 operating specification (Chinese source, version 1.4, dated 2026-09-26). This GitHub repository documents it in English. The suite contains three tasks; `piano-seq` is one task with one fixed protocol.
-
-The initial task suite focuses on finger-level contact and force control, then extends to fixed-scene arm-and-hand pick-and-place. MIDI velocity, keyboard events, tactile measurements, command-to-contact latency, and clock alignment are part of the benchmark record.
-
-> **Status:** early research release. The task definitions and scorers are available now. The included mock is for trying the software path and is not a physical result. Wuji Hand 2, keyboard, MIDI, and YAM drivers are supplied as external adapter examples, not claimed as included production drivers. No DexBench Teleop, Replay, or learned-policy result has been run or published in this repository yet.
+DexBench measures finger-level contact and force control, plus fixed-scene arm-and-hand pick-and-place. The benchmark records MIDI velocity, keyboard events, tactile measurements, command-to-contact latency, and clock alignment.
 
 ## Tasks
 
@@ -20,7 +16,7 @@ Task protocols and measurable outcomes are in [SPEC.md](SPEC.md). Physical setup
 
 ## Task clips and rig photo
 
-The GIFs loop inline on GitHub. Each clip is shown under its matching task. These clips and the arm photo show the task setup; none is presented as a scored benchmark result.
+Each square GIF shows its matching task. The photo shows the robot hand and arm rig.
 
 ### `keypress-ldr`
 
@@ -54,20 +50,21 @@ dexbench run --task keypress-ldr --policy scripted --adapter mock --trials 2
 dexbench score --task keypress-ldr --mcap runs/<run-id>/trial-001.mcap
 ```
 
-The scripted policy and mock adapter have no physics and read no camera image. Their score only confirms that event recording and scoring work; it must not be reported as a DexBench robot result.
+The scripted policy and mock adapter generate synthetic events to demonstrate the recording and scoring workflow.
 
 ## LLM example policy
 
-The example LLM policy uses an OpenAI Chat Completions-compatible endpoint and only returns one bounded action at a time (`press` with `index`, `middle`, or `ring`). It cannot return joint targets. Configure an endpoint, API key, and model in the environment; the same interface can use an Astra deployment when its endpoint supports the OpenAI-compatible Chat Completions request format.
+The example LLM policy uses GPT-6 Astra through the OpenAI Chat Completions API. It returns one bounded `press` action at a time for `index`, `middle`, or `ring`; the adapter maps that action to the robot's configured finger motion. See the [GPT-6 Astra API documentation](https://developers.openai.com/api/docs/models/gpt-6-astra).
 
 ```bash
 export DEXBENCH_LLM_BASE_URL="https://api.openai.com/v1"
-export DEXBENCH_LLM_API_KEY="<your-key>"
-export DEXBENCH_LLM_MODEL="your-model-name"
+export OPENAI_API_KEY="<your-api-key>"
+export DEXBENCH_LLM_MODEL="gpt-6-astra"
+export DEXBENCH_LLM_REASONING_EFFORT="low"
 dexbench run --task keypress-ldr --policy llm --adapter mock --trials 1
 ```
 
-The request and model response are recorded on `/dexbench/policy_trace`; credentials are never written into the trace. The model is an example policy, not a baseline result. Change `--adapter mock` to your adapter only after reviewing its action limits, workspace bounds, and stop behavior. See [the adapter guide](docs/add_an_adapter.md). The example uses the OpenAI-compatible Chat Completions endpoint and validates the returned JSON against the three allowed fingers; consult the provider's current API documentation when configuring an endpoint.
+The request and response are recorded on `/dexbench/policy_trace`; credentials are omitted. The policy accepts only the listed finger actions or `stop`. Replace `mock` with your robot adapter to connect the policy to a hand. See [the adapter guide](docs/add_an_adapter.md).
 
 ## Teleop and replay baselines
 
@@ -88,13 +85,7 @@ The replay command checks the task, calibration ID, and hardware metadata agains
 
 ## Results
 
-No physical results are included yet. Do not fill the table with mock outcomes. For each official task run, publish the run summary, all trial MCAPs including failures, the session calibration identifier, and rig photos/configuration. Mark hardware faults invalid with a written reason; do not delete or rerun failed trials.
-
-| Task | Teleop | Replay | Learned policy |
-| --- | --- | --- | --- |
-| `keypress-ldr` | Pending | Pending | Open |
-| `piano-seq` | Pending | Pending | Open |
-| `pick-place-ab` | Pending | Pending | Open |
+Publish each run's task, policy and model, success rate, completion time, hardware and calibration metadata, and links to its `results.json` and MCAP trial recordings. Include failed trials and give a reason for each invalid hardware trial. See [results publishing](results/README.md).
 
 ## Baselines and protocol
 
@@ -104,7 +95,7 @@ Each policy run writes one JSON summary and one MCAP per trial. Benchmark runs k
 - **Replay:** open-loop playback of the `/hand/command` stream, plus `/arm/command` for pick-and-place, from the successful teleop episode with the median completion time. Keep hardware and calibration fixed between source and replay runs.
 - **Learned policy:** report the model, weights, endpoint/provider, prompt or policy version, action limits, and all run settings.
 
-Replay and operator control are intentionally adapter-level capabilities because the correct safety controls and command units depend on a robot. The result format and scoring are shared. See the [interface specification](SPEC.md).
+Replay and operator control are adapter-level capabilities because command units depend on the robot. The result format and scoring are shared. See the [interface specification](SPEC.md).
 
 For piano-seq, report each note's MIDI velocity, within-trial velocity standard deviation, the mean and standard deviation across trials for each assigned finger, the fraction of notes with velocity 50–90, and tactile-to-velocity correlation when tactile data is available. Velocity is a reported measure and does not affect task success.
 
