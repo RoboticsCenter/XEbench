@@ -48,7 +48,7 @@ Common topics:
 | `/hand/command` | `finger`, commanded position/effort, `pressed` | Hand command |
 | `/hand/state` | joint positions, open pose, `open` boolean | Hand feedback |
 | `/hand/tactile` | tactile array; optional `force_n` summary for MIDI correlation | Hand tactile sensor |
-| `/keyboard/events` | `kind=key_down`, `key` | USB keyboard hardware |
+| `/keyboard/events` | `kind=key_down` or `key_up`, `key`; `kind=key_repeat` for OS repeat | Dedicated USB keyboard |
 | `/midi/events` | `kind=note_on`, `note`, `velocity` | MIDI keyboard hardware |
 | `/arm/command`, `/arm/state` | command/state and units | Arm controller |
 | `/glove/*` | glove skeleton, tactile, EMF, IMU | Operator glove |
@@ -58,6 +58,8 @@ Common topics:
 | `/dexbench/policy_trace` | model, request, response | Example LLM policy |
 
 Scorers require these event fields: keyboard `key` values are uppercase `LEFT`, `DOWN`, or `RIGHT`; MIDI `note` and `velocity` are integers; `/hand/command` uses `finger` and `pressed`; `/hand/state` uses `open` as a boolean; `/scorer/tray_state` uses boolean `object_inside` and numeric `stable_duration_s`. Put fields inside the event's `data` object. Emit `/dexbench/invalid` with a `reason` string for hardware faults.
+
+For keyboard input, emit `key_down` only on a physical up-to-down transition and `key_up` on release. Emit operating-system key repeats as `key_repeat` (or mark them with `repeat: true`) so they remain visible in recordings but do not count as another press. With Linux evdev, map `EV_KEY` values 1, 0, and 2 to `key_down`, `key_up`, and `key_repeat`, respectively. Never convert a repeat event into `key_down`.
 
 One `.mcap` contains one benchmark trial and all available channels. One `results.json` contains the policy/task group summary and references each trial file. Keep every success, failure, and invalid hardware trial; mark hardware faults invalid with a reason.
 
@@ -76,7 +78,7 @@ For replay, select the successful teleop trial with median completion time from 
 
 ### `keypress-ldr`
 
-Use a dedicated USB keyboard read by evdev. Index presses LEFT, middle presses DOWN, and ring presses RIGHT. A trial succeeds if exactly three key-down events appear in that order within 10 seconds of `t0`. A wrong key, repeated/extra press, or timeout fails. Run 20 trials per policy without a scene reset. Report success rate, `t0`-to-third-key completion time, and per-finger `/hand/command` onset to keyboard-event latency.
+Use a dedicated USB keyboard read by evdev. Index presses LEFT, middle presses DOWN, and ring presses RIGHT. A trial succeeds if exactly three physical key-down transitions appear in that order within 10 seconds of `t0`. A wrong key, another physical press, or timeout fails. OS key-repeat events from holding a key do not count as additional physical presses. Run 20 trials per policy without a scene reset. Report success rate, `t0`-to-third-key completion time, and per-finger `/hand/command` onset to keyboard-event latency.
 
 This fixed sequence and hand pose can be memorized. It measures finger-level control precision and latency, not generalization.
 

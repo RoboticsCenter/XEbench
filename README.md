@@ -1,4 +1,16 @@
+<p align="center">
+  <img src="assets/robotics-center-logo.png" alt="Robotics Center" width="360">
+</p>
+
 # RC DexBench
+
+<p align="center">
+  <a href="https://github.com/RoboticsCenter/dexbench/actions/workflows/lint.yml"><img src="https://github.com/RoboticsCenter/dexbench/actions/workflows/lint.yml/badge.svg?branch=main" alt="CI status"></a>
+  <a href="https://github.com/RoboticsCenter/dexbench/actions/workflows/lint.yml"><img src="https://github.com/RoboticsCenter/dexbench/actions/workflows/lint.yml/badge.svg?branch=main&amp;job=docs" alt="Documentation check status"></a>
+  <img src="https://img.shields.io/badge/status-alpha-orange" alt="Alpha status">
+  <img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="Python 3.10 and newer">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-green.svg" alt="Apache 2.0 license"></a>
+</p>
 
 RC DexBench is an open benchmark and evaluation toolkit for dexterous robotic hands. It defines tasks, hardware and session metadata, event-based scoring, and a common adapter interface so teams can compare teleoperation, replay, and learned policies with the same protocol.
 
@@ -87,7 +99,14 @@ The replay command checks the task, calibration ID, and hardware metadata agains
 
 ## Results
 
-Publish each run's task, policy and model, success rate, completion time, hardware and calibration metadata, and links to its `results.json` and MCAP trial recordings. Include failed trials and give a reason for each invalid hardware trial. See [results publishing](results/README.md).
+Publish each run's task, policy and model, success rate, completion time, hardware and calibration metadata, and links to its `results.json` and MCAP trial recordings. Include failed trials and give a reason for each invalid hardware trial. Upload and view recorded MCAP data at [DexData](https://dexdata.roboticscenter.ai); view published benchmark results at [Dexterity Benchmark Results](https://dexterity.roboticscenter.ai/benchmark). See [results publishing](results/README.md).
+
+| Recorded example | Label in source run | MCAP |
+| --- | --- | --- |
+| Episode 4 | Success | [View recording](examples/keypress-ldr/episode_4_success.mcap) |
+| Episode 5 | Failure | [View recording](examples/keypress-ldr/episode_5_failure.mcap) |
+
+These recordings are examples, not DexBench-scored results or a complete benchmark round. The source GUI logger may report repeated key events while a key is held; see the [example notes](examples/keypress-ldr/) and the key-repeat event contract in [SPEC.md](SPEC.md#event-format).
 
 ## Baselines and protocol
 

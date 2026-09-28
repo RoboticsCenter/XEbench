@@ -124,7 +124,11 @@ def _score_keypress(events: list[Event], t0_ns: int) -> Score:
     observed = [
         event
         for event in _select(events, "/keyboard/events")
-        if t0_ns <= event.timestamp_ns <= end_ns and event.data.get("kind") == "key_down"
+        if t0_ns <= event.timestamp_ns <= end_ns
+        and event.data.get("kind") == "key_down"
+        and event.data.get("repeat") is not True
+        and event.data.get("is_repeat") is not True
+        and event.data.get("value") != 2
     ]
     keys = [str(event.data.get("key", "")).upper() for event in observed]
     target = ["LEFT", "DOWN", "RIGHT"]
