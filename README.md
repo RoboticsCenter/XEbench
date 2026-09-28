@@ -99,7 +99,7 @@ The replay command checks the task, calibration ID, and hardware metadata agains
 
 ## Results
 
-Publish each run's task, policy and model, success rate, completion time, hardware and calibration metadata, and links to its `results.json` and MCAP trial recordings. Include failed trials and give a reason for each invalid hardware trial. Upload and view recorded MCAP data at [DexData](https://dexdata.roboticscenter.ai); view published benchmark results at [Dexterity Benchmark Results](https://dexterity.roboticscenter.ai/benchmark). See [results publishing](results/README.md).
+Keep every trial in the run's `results.json`, including failures and hardware-invalid trials. Upload MCAPs to [DexData](https://dexdata.roboticscenter.ai), then submit a complete real-robot run to the [Dexterity benchmark leaderboard](https://dexterity.roboticscenter.ai/benchmark). The page accepts standard tasks and custom protocols that follow the submission format, validates the per-trial outcomes, and recalculates the public score. See the [submission instructions](results/README.md) and the [submission JSON Schema](results/submission.schema.json) for the exact required fields and format.
 
 | Recorded example | Label in source run | MCAP |
 | --- | --- | --- |

@@ -5,6 +5,7 @@ __pycache__/
 runs/
 results/*.json
 !results/README.md
+!results/submission.schema.json
 dist/
 build/
 *.egg-info/
