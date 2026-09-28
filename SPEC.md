@@ -1,6 +1,6 @@
 # RC DexBench Interface and Scoring Specification
 
-Version 0.1.0 — initial public software contract
+Version 0.1.0 — English implementation of RC DexBench v2, operating specification version 1.4 (2026-09-26)
 
 This repository implements the benchmark workflow and reference scorers from the RC DexBench operating specification. Physical task definitions are fixed before a baseline run. Record actual dimensions, model numbers, settings, calibration, and photos in each hardware/session record. Do not tune the task after inspecting results.
 
@@ -78,17 +78,15 @@ Use a dedicated USB keyboard read by evdev. Index presses LEFT, middle presses D
 
 This fixed sequence and hand pose can be memorized. It measures finger-level control precision and latency, not generalization.
 
-### `piano-seq-3`
+### `piano-seq`
 
-Use a velocity-sensitive MIDI keyboard with its model and velocity curve recorded and held fixed. Index, middle, and ring play C4, D4, E4 (MIDI 60, 62, 64), one note each and in order, within 10 seconds. No extra notes are allowed. Run 20 trials per policy without a scene reset. Report success rate, completion time, per-finger latency, each note's velocity, and tactile-to-velocity correlation where tactile samples are available.
+Use a velocity-sensitive MIDI keyboard with its model and velocity curve recorded and held fixed. Index, middle, and ring play C4, D4, E4 (MIDI 60, 62, 64), one note each and in order, within 10 seconds. No extra notes are allowed.
 
-### `piano-seq-dyn`
-
-Use the `piano-seq-3` setup and sequence. Success also requires each velocity inside the locked band. The initial band is 60–80. Before the official run, complete five practice trials; if none are inside the band, widen to 50–90 and lock that band before collecting benchmark results. Run 20 teleop trials. Replay is shared with `piano-seq-3`. Report velocity hit rate and velocity standard deviation.
+Set an even, medium force using touch; do not display MIDI velocity to the operator. Velocity is a measurement and does not change success. Run 20 trials per policy without a scene reset. Report success rate, completion time, per-finger latency, within-trial velocity standard deviation, mean and standard deviation of each assigned finger's velocity across trials, the fraction of notes with velocity 50–90, and tactile-to-velocity correlation when tactile samples are available.
 
 ### `pick-place-ab`
 
-Start with the arm at home, the hand open, and the selected object in its fixed orientation at zone A. Within 60 seconds, success requires the whole object inside the zone B tray, the hand returned to its open pose, and the tray region stable for one continuous second. Use combined depth and color differencing; thin card/key objects are not reliably scored from depth alone. Calibrate the tray threshold from an empty tray and each of the six objects in the tray; set the threshold to half the weakest signal. Run 10 trials per object (60 total), with a manual reset. Report success by object/grasp type, completion time, failure type, and recovery after a failed grasp attempt.
+Use three objects: a standard tennis ball (about 6.7 cm, whole-hand grasp), a standard 3×3 Rubik's cube (about 5.7 cm and 100 g, whole-hand grasp), and a thick capped whiteboard marker (fingertip pinch). Record the brand and measured dimensions. Place the object at zone A in its fixed orientation. Start with the arm at home and hand open. Within 60 seconds, success requires the whole object inside the zone B tray, the hand returned to its open pose, and the tray region stable for one continuous second. Score the tray with D435 depth; add color differencing if the marker's depth signal is too weak, using a tray with strong color contrast. Calibrate the threshold with one empty-tray recording and one recording for each object; set the threshold to half the weakest signal. Run 10 trials per object (30 total), with a manual reset. Report success by object and grasp type and completion time.
 
 ## Results and baselines
 

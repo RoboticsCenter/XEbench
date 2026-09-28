@@ -8,10 +8,9 @@ Use the center of the YAM base as the origin; x points forward, y points left, a
 | --- | --- |
 | Zone A | Center `(35, +15)`; taped 10 × 10 cm square with an arrow for object orientation |
 | Zone B tray | Center `(35, -15)`; inside about 25 × 18 cm; 3 cm walls; fixed with double-sided tape; strong color contrast to objects |
-| Wood strip | 20 × 2 × 1 cm, fixed at the back edge of zone A for thin objects to lean against |
-| Home pose | Open hand, palm down, 25 cm above `(35, 0)`; save measured joint angles |
+| Home pose | Open hand, palm down, 25 cm above `(35, 0)`; record measured joint angles on first teach and use the saved pose thereafter |
 | D435 | 60 cm horizontally in front of workspace center `(35, 0)`, 60 cm above table, pitched down 45 degrees, viewing zone A, tray, and hand |
-| D405 | Mounted on robot wrist, looking at the grasp region |
+| D405 | Mounted on robot wrist, aimed at the grasp region |
 
 If the hand cannot reach, shift the full layout 5 cm toward the base and record the resulting coordinates.
 
@@ -19,11 +18,11 @@ If the hand cannot reach, shift the full layout 5 cm toward the base and record 
 
 Record the brand/model and measured dimensions for each physical object. Keep object orientation fixed at the zone A marker.
 
-| Grasp type | Object 1 | Object 2 |
+| Object | Grasp | Reference dimensions and placement |
 | --- | --- | --- |
-| Power grasp | Tennis ball | Unopened 355 ml (12 oz) can, upright |
-| Precision pinch | 2.5 cm wooden cube | Whiteboard marker, lying flat and aligned with the arrow |
-| Lateral pinch | Credit-card-sized plastic card, leaning on strip | Key, leaning on strip |
+| Standard tennis ball | Whole-hand grasp | About 6.7 cm diameter |
+| Standard 3×3 Rubik's cube | Whole-hand grasp | About 5.7 cm, about 100 g; grab flat and ensure it sits stably in the tray |
+| Thick capped whiteboard marker | Fingertip pinch | Place flat in zone A, aligned with its arrow; use a thick marker for better depth sensing |
 
 ## Calibration and event channels
 

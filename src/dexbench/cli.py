@@ -59,8 +59,6 @@ def _trial(
     policy.reset(task, trial_id)
     t0_ns = adapter.reset(task, trial_id, metadata)
     start_data = {"task": task, "trial_id": trial_id, "t0": True}
-    if metadata.get("velocity_band"):
-        start_data["velocity_band"] = metadata["velocity_band"]
     events = [_event("/dexbench/trial", t0_ns, start_data)]
     for step in range(max_actions):
         try:
@@ -154,7 +152,8 @@ def _run(args: argparse.Namespace) -> int:
     """Run benchmark trials and save per-trial MCAP plus a run summary."""
     if args.task not in TASKS:
         raise ValueError(f"Unknown task {args.task!r}; use 'dexbench tasks' to see available tasks")
-    if args.trials < 1 or args.max_actions < 1:
+    trial_count = args.trials if args.trials is not None else _protocol_trials(args.task)
+    if trial_count < 1 or args.max_actions < 1:
         raise ValueError("--trials and --max-actions must be positive")
     replay_results = None
     if args.policy == "replay" and args.replay_results:
@@ -162,10 +161,7 @@ def _run(args: argparse.Namespace) -> int:
         replay_results = json.loads(results_path.read_text(encoding="utf-8"))
         if replay_results.get("policy") != "teleop":
             raise ValueError("--replay-results must point to a teleop policy run")
-        compatible_tasks = {args.task}
-        if args.task == "piano-seq-dyn":
-            compatible_tasks.add("piano-seq-3")
-        if replay_results.get("task") not in compatible_tasks:
+        if replay_results.get("task") != args.task:
             raise ValueError(
                 f"Replay source task {replay_results.get('task')!r} cannot seed {args.task!r}"
             )
@@ -244,16 +240,9 @@ def _run(args: argparse.Namespace) -> int:
             args, "replay_source_trial_id", policy.source_trial_id
         )
         run_metadata["replay_source_mcap"] = str(Path(args.replay_from).resolve())
-    if args.task == "piano-seq-dyn":
-        band = args.velocity_band or TASKS["piano-seq-dyn"]["velocity_band"]
-        if len(band) != 2 or band[0] < 0 or band[1] > 127 or band[0] > band[1]:
-            raise ValueError("--velocity-band must be two ordered MIDI values between 0 and 127")
-        run_metadata["velocity_band"] = band
-    elif args.velocity_band:
-        raise ValueError("--velocity-band applies only to piano-seq-dyn")
     trials = []
     try:
-        for trial_number in range(1, args.trials + 1):
+        for trial_number in range(1, trial_count + 1):
             trial_id = f"{run_id}-{trial_number:03d}"
             trial_metadata = dict(run_metadata)
             if args.task == "pick-place-ab":
@@ -287,29 +276,17 @@ def _run(args: argparse.Namespace) -> int:
         for trial in valid
         if trial["metrics"].get("completion_time_s") is not None
     ]
-    recovery_trials = [
-        trial for trial in valid if trial["metrics"].get("failed_grasp_attempt", False)
-    ]
     summary = {
         **run_metadata,
         "task_description": TASKS[args.task]["description"],
-        "protocol_trials": 60 if args.task == "pick-place-ab" else 20,
+        "protocol_trials": _protocol_trials(args.task),
         "trials_per_object": TASKS[args.task].get("trials_per_object"),
         "trial_count": len(trials),
-        "protocol_complete": len(trials) >= (60 if args.task == "pick-place-ab" else 20),
+        "protocol_complete": len(trials) >= _protocol_trials(args.task),
         "invalid_count": len(trials) - len(valid),
         "success_rate": success_rate,
         "mean_completion_time_s": statistics.mean(durations) if durations else None,
         "sync_metrics": _sync_metrics(session_metadata),
-        "recovery_rate": (
-            sum(
-                trial["metrics"].get("recovery_after_failed_grasp", False)
-                for trial in recovery_trials
-            )
-            / len(recovery_trials)
-            if recovery_trials
-            else None
-        ),
         "success_rate_by_object": {
             object_id: _success_rate(
                 [trial for trial in valid if trial.get("object_id") == object_id]
@@ -323,6 +300,9 @@ def _run(args: argparse.Namespace) -> int:
             for grasp_type in sorted(set(OBJECT_GRASP_TYPE.values()))
             if args.task == "pick-place-ab"
         },
+        "piano_velocity_by_finger": (
+            _piano_velocity_summary(valid) if args.task == "piano-seq" else None
+        ),
         "trials": trials,
     }
     write_json(output / "results.json", summary)
@@ -333,6 +313,44 @@ def _run(args: argparse.Namespace) -> int:
 def _success_rate(trials: list[dict[str, Any]]) -> float | None:
     """Calculate an invalid-excluding success rate for a trial subset."""
     return sum(trial["success"] for trial in trials) / len(trials) if trials else None
+
+
+def _protocol_trials(task: str) -> int:
+    """Return the fixed full-round trial count for a task."""
+    if task == "pick-place-ab":
+        return len(TASKS[task]["objects"]) * TASKS[task]["trials_per_object"]
+    return TASKS[task]["trials"]
+
+
+def _piano_velocity_summary(trials: list[dict[str, Any]]) -> dict[str, Any]:
+    """Summarize MIDI velocity by assigned finger over valid trials."""
+    note_for_finger = {"index_C4": 60, "middle_D4": 62, "ring_E4": 64}
+    values = {finger: [] for finger in note_for_finger}
+    all_velocities = []
+    for trial in trials:
+        metrics = trial.get("metrics", {})
+        all_velocities.extend(metrics.get("velocities", []))
+        note_velocities = zip(metrics.get("notes", []), metrics.get("velocities", []), strict=False)
+        for note, velocity in note_velocities:
+            for finger, target_note in note_for_finger.items():
+                if note == target_note:
+                    values[finger].append(float(velocity))
+    return {
+        "note_count": len(all_velocities),
+        "velocity_50_90_hit_rate": (
+            sum(50 <= velocity <= 90 for velocity in all_velocities) / len(all_velocities)
+            if all_velocities
+            else None
+        ),
+        "by_finger": {
+            finger: {
+                "count": len(velocities),
+                "mean": statistics.mean(velocities) if velocities else None,
+                "stddev": statistics.pstdev(velocities) if velocities else None,
+            }
+            for finger, velocities in values.items()
+        },
+    }
 
 
 def _sync_metrics(session_metadata: dict[str, Any]) -> dict[str, Any]:
@@ -404,7 +422,9 @@ def build_parser() -> argparse.ArgumentParser:
     run_parser.add_argument(
         "--adapter", default="mock", help="mock or Python module:factory adapter"
     )
-    run_parser.add_argument("--trials", type=int, default=1)
+    run_parser.add_argument(
+        "--trials", type=int, help="trial count (defaults to the task's full protocol)"
+    )
     run_parser.add_argument("--max-actions", type=int, default=12)
     run_parser.add_argument("--output", default="runs")
     run_parser.add_argument("--run-id")
@@ -412,7 +432,6 @@ def build_parser() -> argparse.ArgumentParser:
     run_parser.add_argument(
         "--session-metadata", help="JSON with session hardware and sync metadata"
     )
-    run_parser.add_argument("--velocity-band", nargs=2, type=int, metavar=("LOW", "HIGH"))
     run_parser.add_argument("--replay-from", help="successful source-trial MCAP for replay policy")
     run_parser.add_argument(
         "--replay-results", help="teleop results.json; select the successful median-time trial"

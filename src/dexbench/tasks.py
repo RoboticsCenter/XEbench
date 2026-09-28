@@ -15,20 +15,12 @@ TASKS: dict[str, dict[str, Any]] = {
         "event_topic": "/keyboard/events",
         "sequence": ["LEFT", "DOWN", "RIGHT"],
     },
-    "piano-seq-3": {
-        "description": "Play MIDI notes C4, D4, E4 (60, 62, 64), one note per finger.",
+    "piano-seq": {
+        "description": "Play MIDI notes C4, D4, E4 (60, 62, 64) in order with even, medium force.",
         "limit_s": 10.0,
         "trials": 20,
         "event_topic": "/midi/events",
         "sequence": [60, 62, 64],
-    },
-    "piano-seq-dyn": {
-        "description": "Play MIDI notes 60, 62, 64 with each velocity inside the locked band.",
-        "limit_s": 10.0,
-        "trials": 20,
-        "event_topic": "/midi/events",
-        "sequence": [60, 62, 64],
-        "velocity_band": [60, 80],
     },
     "pick-place-ab": {
         "description": "Pick the object at zone A and place it fully inside the zone B tray.",
@@ -36,11 +28,8 @@ TASKS: dict[str, dict[str, Any]] = {
         "trials_per_object": 10,
         "objects": [
             "tennis_ball",
-            "355ml_can",
-            "wooden_cube",
+            "rubiks_cube_3x3",
             "whiteboard_marker",
-            "plastic_card",
-            "key",
         ],
         "event_topic": "/scorer/tray_state",
     },
@@ -51,10 +40,9 @@ INSTRUCTIONS = {
         "Use index for LEFT, middle for DOWN, and ring for RIGHT. Press each once in order. "
         "Finish within 10 seconds. You may only request a press action for one of those fingers."
     ),
-    "piano-seq-3": "Play C4 (60), D4 (62), E4 (64), once each and in order, within 10 seconds.",
-    "piano-seq-dyn": (
+    "piano-seq": (
         "Play C4 (60), D4 (62), E4 (64), once each and in order, within 10 seconds. "
-        "Every note velocity must be within the locked task band."
+        "Use an even, medium force for each key, guided by feel rather than a numeric display."
     ),
     "pick-place-ab": (
         "Pick up the designated object at zone A, move it to the zone B tray, release it, "
@@ -65,11 +53,8 @@ INSTRUCTIONS = {
 FINGER_FOR_KEY = {"LEFT": "index", "DOWN": "middle", "RIGHT": "ring"}
 OBJECT_GRASP_TYPE = {
     "tennis_ball": "power_grasp",
-    "355ml_can": "power_grasp",
-    "wooden_cube": "precision_pinch",
+    "rubiks_cube_3x3": "power_grasp",
     "whiteboard_marker": "precision_pinch",
-    "plastic_card": "lateral_pinch",
-    "key": "lateral_pinch",
 }
 
 
@@ -96,6 +81,7 @@ def _latencies(events: list[Event], t0_ns: int, key_events: list[Event]) -> dict
             for command in commands
             if command.data.get("finger") == finger
             and command.data.get("pressed", False)
+            and command.timestamp_ns >= t0_ns
             and command.timestamp_ns <= event.timestamp_ns
         ]
         if candidates:
@@ -127,8 +113,8 @@ def score_trial(task: str, events: list[Event], t0_ns: int) -> Score:
         return Score(False, str(invalid.data.get("reason", "hardware_fault")), {}, True)
     if task == "keypress-ldr":
         return _score_keypress(events, t0_ns)
-    if task in {"piano-seq-3", "piano-seq-dyn"}:
-        return _score_piano(task, events, t0_ns)
+    if task == "piano-seq":
+        return _score_piano(events, t0_ns)
     return _score_pick_place(events, t0_ns)
 
 
@@ -138,7 +124,7 @@ def _score_keypress(events: list[Event], t0_ns: int) -> Score:
     observed = [
         event
         for event in _select(events, "/keyboard/events")
-        if event.timestamp_ns <= end_ns and event.data.get("kind") == "key_down"
+        if t0_ns <= event.timestamp_ns <= end_ns and event.data.get("kind") == "key_down"
     ]
     keys = [str(event.data.get("key", "")).upper() for event in observed]
     target = ["LEFT", "DOWN", "RIGHT"]
@@ -156,29 +142,21 @@ def _score_keypress(events: list[Event], t0_ns: int) -> Score:
     )
 
 
-def _score_piano(task: str, events: list[Event], t0_ns: int) -> Score:
-    """Score note order and, for piano-seq-dyn, the locked velocity band."""
+def _score_piano(events: list[Event], t0_ns: int) -> Score:
+    """Score the note sequence and report velocity and tactile measurements."""
     end_ns = t0_ns + 10_000_000_000
     notes = [
         event
         for event in _select(events, "/midi/events")
-        if event.timestamp_ns <= end_ns and event.data.get("kind") == "note_on"
+        if t0_ns <= event.timestamp_ns <= end_ns and event.data.get("kind") == "note_on"
     ]
     sequence = [int(event.data.get("note", -1)) for event in notes]
     velocities = [int(event.data.get("velocity", 0)) for event in notes]
     sequence_ok = sequence == [60, 62, 64]
-    start = next(
-        (event for event in events if event.topic == "/dexbench/trial" and event.data.get("t0")),
-        None,
-    )
-    band = (
-        start.data.get("velocity_band", TASKS["piano-seq-dyn"]["velocity_band"])
-        if start is not None
-        else TASKS["piano-seq-dyn"]["velocity_band"]
-    )
-    velocity_hits = [band[0] <= velocity <= band[1] for velocity in velocities]
-    success = sequence_ok and (task != "piano-seq-dyn" or all(velocity_hits))
-    tactile = _select(events, "/hand/tactile")
+    success = sequence_ok
+    tactile = [
+        event for event in _select(events, "/hand/tactile") if t0_ns <= event.timestamp_ns <= end_ns
+    ]
     force_values: list[float] = []
     paired_velocities: list[float] = []
     for note in notes:
@@ -191,17 +169,7 @@ def _score_piano(task: str, events: list[Event], t0_ns: int) -> Score:
             force_values.append(float(nearest.data["force_n"]))
             paired_velocities.append(float(note.data.get("velocity", 0)))
     timed_out = any(event.topic == "/dexbench/timeout" for event in events)
-    reason = (
-        "success"
-        if success
-        else (
-            "velocity_out_of_band"
-            if sequence_ok and task == "piano-seq-dyn"
-            else "timeout"
-            if timed_out
-            else "note_sequence_incorrect"
-        )
-    )
+    reason = "success" if success else "timeout" if timed_out else "note_sequence_incorrect"
     return Score(
         success,
         reason,
@@ -210,23 +178,25 @@ def _score_piano(task: str, events: list[Event], t0_ns: int) -> Score:
                 events, t0_ns, notes[-1].timestamp_ns if sequence_ok else None
             ),
             "per_finger_latency_s": {
-                "index": _command_latency(events, "index", notes, 0),
-                "middle": _command_latency(events, "middle", notes, 1),
-                "ring": _command_latency(events, "ring", notes, 2),
+                "index": _command_latency(events, "index", notes, 0, t0_ns),
+                "middle": _command_latency(events, "middle", notes, 1, t0_ns),
+                "ring": _command_latency(events, "ring", notes, 2, t0_ns),
             },
             "notes": sequence,
             "velocities": velocities,
-            "velocity_hit_rate": (
-                sum(velocity_hits) / len(velocity_hits) if velocity_hits else None
+            "within_trial_velocity_stddev": _stddev(velocities),
+            "medium_velocity_hit_rate": (
+                sum(50 <= velocity <= 90 for velocity in velocities) / len(velocities)
+                if velocities
+                else None
             ),
-            "velocity_stddev": _stddev(velocities),
             "tactile_velocity_correlation": _pearson(force_values, paired_velocities),
         },
     )
 
 
 def _command_latency(
-    events: list[Event], finger: str, target_events: list[Event], target_index: int
+    events: list[Event], finger: str, target_events: list[Event], target_index: int, t0_ns: int
 ) -> float | None:
     """Return one finger's command-to-contact latency."""
     if len(target_events) <= target_index:
@@ -237,6 +207,7 @@ def _command_latency(
         for event in _select(events, "/hand/command")
         if event.data.get("finger") == finger
         and event.data.get("pressed", False)
+        and event.timestamp_ns >= t0_ns
         and event.timestamp_ns <= target.timestamp_ns
     ]
     if not commands:
@@ -256,43 +227,43 @@ def _score_pick_place(events: list[Event], t0_ns: int) -> Score:
     """Score release, tray placement, and one second of observed stability."""
     end_ns = t0_ns + 60_000_000_000
     tray_events = [
-        event for event in _select(events, "/scorer/tray_state") if event.timestamp_ns <= end_ns
+        event
+        for event in _select(events, "/scorer/tray_state")
+        if t0_ns <= event.timestamp_ns <= end_ns
     ]
     releases = [
         event
         for event in _select(events, "/hand/state")
-        if event.timestamp_ns <= end_ns and event.data.get("open", False)
+        if t0_ns <= event.timestamp_ns <= end_ns and event.data.get("open", False)
     ]
-    successful_tray = next(
-        (
-            event
-            for event in tray_events
-            if event.data.get("object_inside", False)
-            and float(event.data.get("stable_duration_s", 0.0)) >= 1.0
-            and any(release.timestamp_ns <= event.timestamp_ns for release in releases)
-        ),
-        None,
-    )
-    failures = [event for event in events if event.topic == "/dexbench/failure"]
-    failure_types = [str(event.data.get("type", "unknown")) for event in failures]
-    attempt_failed = any(event.data.get("type") == "grasp_attempt_failed" for event in failures)
+    successful_tray = None
+    inside_since_ns = None
+    for event in tray_events:
+        if not event.data.get("object_inside", False):
+            inside_since_ns = None
+            continue
+        if inside_since_ns is None:
+            inside_since_ns = event.timestamp_ns
+        if float(event.data.get("stable_duration_s", 0.0)) >= 1.0 and any(
+            inside_since_ns <= release.timestamp_ns <= event.timestamp_ns for release in releases
+        ):
+            successful_tray = event
+            break
     success = successful_tray is not None
-    return Score(
-        success,
+    reason = (
         "success"
         if success
-        else failure_types[-1]
-        if failure_types
         else "timeout"
         if any(event.topic == "/dexbench/timeout" for event in events)
-        else "not_placed",
+        else "not_placed"
+    )
+    return Score(
+        success,
+        reason,
         {
             "completion_time_s": _completion(
                 events, t0_ns, successful_tray.timestamp_ns if successful_tray else None
-            ),
-            "failure_types": failure_types,
-            "failed_grasp_attempt": attempt_failed,
-            "recovery_after_failed_grasp": bool(attempt_failed and success),
+            )
         },
     )
 

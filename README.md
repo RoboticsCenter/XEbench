@@ -2,6 +2,8 @@
 
 RC DexBench is an open benchmark and evaluation toolkit for dexterous robotic hands. It defines tasks, hardware and session metadata, event-based scoring, and a common adapter interface so teams can compare teleoperation, replay, and learned policies with the same protocol.
 
+The task list follows the latest RC DexBench v2 operating specification (Chinese source, version 1.4, dated 2026-09-26). This GitHub repository documents it in English. The suite contains three tasks; `piano-seq` is one task with one fixed protocol.
+
 The initial task suite focuses on finger-level contact and force control, then extends to fixed-scene arm-and-hand pick-and-place. MIDI velocity, keyboard events, tactile measurements, command-to-contact latency, and clock alignment are part of the benchmark record.
 
 > **Status:** early research release. The task definitions and scorers are available now. The included mock is for trying the software path and is not a physical result. Wuji Hand 2, keyboard, MIDI, and YAM drivers are supplied as external adapter examples, not claimed as included production drivers. No DexBench Teleop, Replay, or learned-policy result has been run or published in this repository yet.
@@ -11,11 +13,26 @@ The initial task suite focuses on finger-level contact and force control, then e
 | Task | Goal | Trials per policy | Automatic outcome |
 | --- | --- | ---: | --- |
 | `keypress-ldr` | Index, middle, ring press LEFT → DOWN → RIGHT | 20 | Dedicated USB keyboard events |
-| `piano-seq-3` | Play MIDI notes 60 → 62 → 64 | 20 | MIDI note and timestamp events |
-| `piano-seq-dyn` | Same sequence, each velocity in the locked band | 20 | MIDI notes and velocity |
-| `pick-place-ab` | Move one of six objects from zone A into a tray | 10 per object | Tray region, hand release, and stability signals |
+| `piano-seq` | Play MIDI notes 60 → 62 → 64 with even, medium force | 20 | MIDI note, timestamp, and velocity events |
+| `pick-place-ab` | Move a tennis ball, 3×3 cube, or capped whiteboard marker from zone A into a tray | 10 per object (30 total) | Tray region, hand release, and stability signals |
 
 Task protocols and measurable outcomes are in [SPEC.md](SPEC.md). Physical setup and per-session recording fields are in [hardware/](hardware/) and [docs/data_and_scoring.md](docs/data_and_scoring.md).
+
+## Task clips and rig photo
+
+The GIFs loop inline on GitHub. Each clip is shown under its matching task. These clips and the arm photo show the task setup; none is presented as a scored benchmark result.
+
+### `keypress-ldr`
+
+![Dexterous hand above the arrow-key keyboard for keypress-ldr](assets/keypress-ldr.gif)
+
+### `piano-seq`
+
+![Dexterous hand above the MIDI keyboard for piano-seq](assets/piano-seq.gif)
+
+### `pick-place-ab`
+
+![Wuji dexterous hand mounted on a robot arm, the pick-place-ab rig reference](assets/pick-place-ab-rig.jpg)
 
 ## Quick start
 
@@ -46,7 +63,7 @@ The example LLM policy uses an OpenAI Chat Completions-compatible endpoint and o
 ```bash
 export DEXBENCH_LLM_BASE_URL="https://api.openai.com/v1"
 export DEXBENCH_LLM_API_KEY="<your-key>"
-export DEXBENCH_LLM_MODEL="gpt-4.1-mini"
+export DEXBENCH_LLM_MODEL="your-model-name"
 dexbench run --task keypress-ldr --policy llm --adapter mock --trials 1
 ```
 
@@ -67,7 +84,7 @@ dexbench run --task keypress-ldr --policy replay \
   --replay-results runs/<teleop-run-id>/results.json
 ```
 
-The replay command checks the task, calibration ID, and hardware metadata against the teleop run. For `piano-seq-dyn`, a successful `piano-seq-3` teleop run may seed the shared replay baseline. Use `--velocity-band 50 90` only when the five-trial practice procedure requires it, and lock the selected band before official trials.
+The replay command checks the task, calibration ID, and hardware metadata against the teleop run. For piano-seq, it selects a successful teleop episode with median completion time, just as it does for the other tasks.
 
 ## Results
 
@@ -76,8 +93,7 @@ No physical results are included yet. Do not fill the table with mock outcomes. 
 | Task | Teleop | Replay | Learned policy |
 | --- | --- | --- | --- |
 | `keypress-ldr` | Pending | Pending | Open |
-| `piano-seq-3` | Pending | Pending | Open |
-| `piano-seq-dyn` | Pending | Pending | Open |
+| `piano-seq` | Pending | Pending | Open |
 | `pick-place-ab` | Pending | Pending | Open |
 
 ## Baselines and protocol
@@ -89,6 +105,8 @@ Each policy run writes one JSON summary and one MCAP per trial. Benchmark runs k
 - **Learned policy:** report the model, weights, endpoint/provider, prompt or policy version, action limits, and all run settings.
 
 Replay and operator control are intentionally adapter-level capabilities because the correct safety controls and command units depend on a robot. The result format and scoring are shared. See the [interface specification](SPEC.md).
+
+For piano-seq, report each note's MIDI velocity, within-trial velocity standard deviation, the mean and standard deviation across trials for each assigned finger, the fraction of notes with velocity 50–90, and tactile-to-velocity correlation when tactile data is available. Velocity is a reported measure and does not affect task success.
 
 ## Add a hand or task
 
