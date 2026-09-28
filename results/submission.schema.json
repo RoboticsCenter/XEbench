@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/RoboticsCenter/dexbench/blob/main/results/submission.schema.json",
+  "title": "DexBench public leaderboard submission",
+  "description": "Public, community-reported result envelope accepted by the Robotics Center Dexterity leaderboard.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "benchmark", "run", "hardware", "policy", "artifacts", "contributor", "publish"],
+  "properties": {
+    "schema_version": { "const": "dexbench.submission.v1" },
+    "benchmark": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task_id", "protocol_version", "custom_task"],
+      "properties": {
+        "task_id": { "type": "string", "minLength": 1, "maxLength": 80, "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$" },
+        "protocol_version": { "type": "string", "minLength": 1, "maxLength": 40 },
+        "custom_task": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "name", "protocol_version", "protocol_trials", "spec_url"],
+              "properties": {
+                "id": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+                "protocol_version": { "type": "string", "minLength": 1, "maxLength": 40 },
+                "protocol_trials": { "type": "integer", "minimum": 1, "maximum": 500 },
+                "spec_url": { "type": "string", "format": "uri", "pattern": "^https://" }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "run": {
+      "type": "object",
+      "description": "Scoring-only fields copied from the uploaded results.json. Do not include session metadata, serial numbers, calibration IDs, policy endpoints, or file paths.",
+      "additionalProperties": false,
+      "required": ["task", "mock", "protocol_trials", "trial_count", "protocol_complete", "trials"],
+      "properties": {
+        "task": { "type": "string", "minLength": 1 },
+        "mock": { "type": "boolean", "const": false },
+        "protocol_trials": { "type": "integer", "minimum": 1 },
+        "trial_count": { "type": "integer", "minimum": 1 },
+        "protocol_complete": { "type": "boolean", "const": true },
+        "trials": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 500,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["success", "invalid"],
+            "properties": {
+              "success": { "type": "boolean" },
+              "invalid": { "type": "boolean" },
+              "metrics": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": { "completion_time_s": { "type": "number", "minimum": 0 } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "hardware": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hand", "arm"],
+      "properties": {
+        "hand": { "$ref": "#/$defs/device" },
+        "arm": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/device" }] }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "name", "provider", "model", "version"],
+      "properties": {
+        "type": { "enum": ["llm", "learned", "scripted", "teleop", "replay", "other"] },
+        "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "provider": { "type": ["string", "null"], "maxLength": 100 },
+        "model": { "type": ["string", "null"], "maxLength": 120 },
+        "version": { "type": ["string", "null"], "maxLength": 120 }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mcap_viewer_url", "results_json_url"],
+      "properties": {
+        "mcap_viewer_url": { "type": "string", "format": "uri", "pattern": "^https://dexdata\\.roboticscenter\\.ai(/|$)" },
+        "results_json_url": { "type": ["string", "null"], "format": "uri", "pattern": "^https://" }
+      }
+    },
+    "contributor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["display_name", "organization", "contact_email", "contact_for_incentive"],
+      "properties": {
+        "display_name": { "type": ["string", "null"], "maxLength": 80 },
+        "organization": { "type": ["string", "null"], "maxLength": 100 },
+        "contact_email": { "type": ["string", "null"], "format": "email" },
+        "contact_for_incentive": { "type": "boolean" }
+      }
+    },
+    "publish": { "const": true }
+  },
+  "$defs": {
+    "device": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manufacturer", "model"],
+      "properties": {
+        "manufacturer": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "model": { "type": "string", "minLength": 1, "maxLength": 100 }
+      }
+    }
+  }
+}
