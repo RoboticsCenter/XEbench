@@ -1,12 +1,12 @@
 # Connect a hand, simulator, or rig
 
-An adapter maps the DexBench action space to one configured embodiment, reads sensors, and emits timestamped `Event` records. Install DexBench in the adapter's environment, then pass its factory to the runner:
+An adapter maps the XEbench action space to one configured embodiment, reads sensors, and emits timestamped `Event` records. Install XEbench in the adapter's environment, then pass its factory to the runner:
 
 ```bash
-dexbench run \
+xebench run \
   --task keypress-ldr \
   --policy llm \
-  --adapter my_robot.dexbench_adapter:create_adapter \
+  --adapter my_robot.xebench_adapter:create_adapter \
   --trials 20 \
   --calib-id session-2026-09-27-a \
   --session-metadata session.json
@@ -27,16 +27,16 @@ For Wuji Hand 2, record `/hand/command` and `/hand/state` separately. Read the d
 The built-in GPT-6 Astra and scripted policies support `keypress-ldr`. Supply a custom policy factory to run a policy for `piano-seq` or `pick-place-ab`, or to connect another learned policy:
 
 ```bash
-dexbench run \
+xebench run \
   --task piano-seq \
   --policy custom \
   --policy-factory my_project.policies:create_policy \
-  --adapter my_robot.dexbench_adapter:create_adapter \
+  --adapter my_robot.xebench_adapter:create_adapter \
   --trials 20 \
   --calib-id session-2026-09-27-a \
   --session-metadata session.json
 ```
 
-The policy factory receives the session metadata dictionary and returns an object with `name`, `reset(task, trial_id)`, and `act(observation)` methods. `act` returns an `Action` or `None`. The observation contains the task instruction, recent timestamped events, and run metadata; for `pick-place-ab`, `observation.metadata` includes the selected `object_id` and `grasp_type`. Robot-specific action kinds are handled by the adapter. Implement the policy and factory in an importable Python module in the environment running DexBench.
+The policy factory receives the session metadata dictionary and returns an object with `name`, `reset(task, trial_id)`, and `act(observation)` methods. `act` returns an `Action` or `None`. The observation contains the task instruction, recent timestamped events, and run metadata; for `pick-place-ab`, `observation.metadata` includes the selected `object_id` and `grasp_type`. Robot-specific action kinds are handled by the adapter. Implement the policy and factory in an importable Python module in the environment running XEbench.
 
 See [SPEC.md](../SPEC.md) for the shared task event fields and outcome rules.

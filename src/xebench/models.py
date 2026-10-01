@@ -1,4 +1,4 @@
-"""Shared data structures and adapter contracts for DexBench."""
+"""Shared data structures and adapter contracts for XEbench."""
 
 from __future__ import annotations
 
@@ -66,7 +66,7 @@ class Policy(Protocol):
 
 
 class Adapter(Protocol):
-    """Bridge between DexBench and a simulator or physical robot."""
+    """Bridge between XEbench and a simulator or physical robot."""
 
     name: str
 

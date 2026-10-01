@@ -1,6 +1,6 @@
 # Publish a result
 
-The Dexterity leaderboard accepts complete, non-mock DexBench runs. Upload the `results.json` file written by `dexbench run`, provide the hardware and policy metadata below, and link public MCAP trial recordings in DexData. The public site validates the fixed protocol and recalculates the score from the per-trial outcomes.
+The Dexterity leaderboard accepts complete, non-mock XEbench runs. Upload the `results.json` file written by `xebench run`, provide the hardware and policy metadata below, and link public MCAP trial recordings in DexData. The public site validates the fixed protocol and recalculates the score from the per-trial outcomes.
 
 ## Submit on the website
 

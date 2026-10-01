@@ -1,4 +1,4 @@
-"""Command-line interface for running and scoring DexBench trials."""
+"""Command-line interface for running and scoring XEbench trials."""
 
 from __future__ import annotations
 
@@ -14,16 +14,16 @@ from typing import Any
 
 import httpx
 
-from dexbench.adapters import MockKeyboardAdapter, create_observation, load_adapter
-from dexbench.models import Event, Policy
-from dexbench.policies import (
+from xebench.adapters import MockKeyboardAdapter, create_observation, load_adapter
+from xebench.models import Event, Policy
+from xebench.policies import (
     OpenAICompatiblePolicy,
     ReplayPolicy,
     ScriptedKeyboardPolicy,
     TeleopPolicy,
 )
-from dexbench.recording import read_mcap_events, write_json, write_mcap
-from dexbench.tasks import OBJECT_GRASP_TYPE, TASKS, score_trial
+from xebench.recording import read_mcap_events, write_json, write_mcap
+from xebench.tasks import OBJECT_GRASP_TYPE, TASKS, score_trial
 
 
 def _policy(name: str, args: argparse.Namespace, session_metadata: dict[str, Any]) -> Policy:
@@ -162,7 +162,7 @@ def _trial(
 def _run(args: argparse.Namespace) -> int:
     """Run benchmark trials and save per-trial MCAP plus a run summary."""
     if args.task not in TASKS:
-        raise ValueError(f"Unknown task {args.task!r}; use 'dexbench tasks' to see available tasks")
+        raise ValueError(f"Unknown task {args.task!r}; use 'xebench tasks' to see available tasks")
     trial_count = args.trials if args.trials is not None else _protocol_trials(args.task)
     if trial_count < 1 or args.max_actions < 1:
         raise ValueError("--trials and --max-actions must be positive")
@@ -395,7 +395,7 @@ def _score(args: argparse.Namespace) -> int:
         None,
     )
     if t0_event is None:
-        raise ValueError(f"{path} does not contain a DexBench trial start record")
+        raise ValueError(f"{path} does not contain a XEbench trial start record")
     score = score_trial(args.task, events, t0_event.timestamp_ns)
     print(
         json.dumps(
@@ -419,9 +419,9 @@ def _tasks(_args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """Build the DexBench argument parser."""
+    """Build the XEbench argument parser."""
     parser = argparse.ArgumentParser(
-        prog="dexbench", description="Run and score dexterous hand tasks"
+        prog="xebench", description="Run and score cross-embodiment robotic manipulation tasks"
     )
     commands = parser.add_subparsers(dest="command", required=True)
     tasks_parser = commands.add_parser("tasks", help="list included benchmark tasks")
@@ -467,6 +467,6 @@ def main() -> None:
     try:
         status = args.func(args)
     except (ValueError, OSError, httpx.HTTPError, KeyError, ImportError) as error:
-        print(f"dexbench: error: {error}", file=sys.stderr)
+        print(f"xebench: error: {error}", file=sys.stderr)
         status = 2
     raise SystemExit(status)
