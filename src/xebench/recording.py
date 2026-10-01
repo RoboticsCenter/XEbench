@@ -10,7 +10,7 @@ from typing import Any
 from mcap.reader import make_reader
 from mcap.writer import Writer
 
-from dexbench.models import Event
+from xebench.models import Event
 
 JSON_SCHEMA = {
     "type": "object",
@@ -57,7 +57,7 @@ def write_mcap(path: Path, events: list[Event], metadata: dict[str, Any]) -> Non
 
 
 def read_mcap_events(path: Path) -> list[Event]:
-    """Read DexBench JSON events from an MCAP file."""
+    """Read XEbench JSON events from an MCAP file."""
     events = []
     with path.open("rb") as stream:
         reader = make_reader(stream)

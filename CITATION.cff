@@ -1,6 +1,6 @@
 cff-version: 1.2.0
-message: "If you use RC DexBench, please cite this software."
-title: "RC DexBench: An Open Benchmark for Dexterous Robot Evaluation"
+message: "If you use RC XEbench, please cite this software."
+title: "RC XEbench: An Open Cross-Embodiment Benchmark for Robotic Manipulation"
 type: software
 authors:
   - name: Robotics Center

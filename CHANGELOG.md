@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Rename the toolkit to XEbench (Cross-Embodiment Benchmark), with the `rc-xebench` distribution, `xebench` Python package and command, and `XEBENCH_*` configuration.
+- Lead the README with the cross-embodiment σ, mean success, and embodiment coverage, and document the controlled-cohort aggregation rules.
+- Keep legacy imports, command, environment variables, recording topics, and submission identifiers compatible.
+
 ## 0.1.0 — 2026-09-27
 
 - Define the three benchmark tasks: `keypress-ldr`, `piano-seq`, and `pick-place-ab`.

@@ -6,8 +6,8 @@ import importlib
 import time
 from typing import Any
 
-from dexbench.models import Action, Event, Observation
-from dexbench.tasks import FINGER_FOR_KEY, INSTRUCTIONS
+from xebench.models import Action, Event, Observation
+from xebench.tasks import FINGER_FOR_KEY, INSTRUCTIONS
 
 
 class MockKeyboardAdapter:

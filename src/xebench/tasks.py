@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 from typing import Any
 
-from dexbench.models import Event, Score
+from xebench.models import Event, Score
 
 TASKS: dict[str, dict[str, Any]] = {
     "keypress-ldr": {
@@ -107,7 +107,7 @@ def _pearson(xs: list[float], ys: list[float]) -> float | None:
 def score_trial(task: str, events: list[Event], t0_ns: int) -> Score:
     """Score a trial using only its recorded event stream."""
     if task not in TASKS:
-        raise ValueError(f"Unknown DexBench task: {task}")
+        raise ValueError(f"Unknown XEbench task: {task}")
     invalid = next((event for event in events if event.topic == "/dexbench/invalid"), None)
     if invalid is not None:
         return Score(False, str(invalid.data.get("reason", "hardware_fault")), {}, True)

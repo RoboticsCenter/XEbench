@@ -10,9 +10,14 @@ from typing import Any
 
 import httpx
 
-from dexbench.models import Action, Adapter, Observation
-from dexbench.recording import read_mcap_events
-from dexbench.tasks import FINGER_FOR_KEY, TASKS
+from xebench.models import Action, Adapter, Observation
+from xebench.recording import read_mcap_events
+from xebench.tasks import FINGER_FOR_KEY, TASKS
+
+
+def _llm_setting(name: str, default: str = "") -> str:
+    """Prefer XEbench configuration, falling back to legacy deployment settings."""
+    return os.environ.get(f"XEBENCH_LLM_{name}", os.environ.get(f"DEXBENCH_LLM_{name}", default))
 
 
 class ScriptedKeyboardPolicy:
@@ -49,14 +54,14 @@ class OpenAICompatiblePolicy:
 
     def __init__(self) -> None:
         """Read endpoint, credential, and model from environment variables."""
-        self.base_url = os.environ.get("DEXBENCH_LLM_BASE_URL", "https://api.openai.com/v1")
-        self.api_key = os.environ.get("DEXBENCH_LLM_API_KEY") or os.environ.get("OPENAI_API_KEY")
-        self.model = os.environ.get("DEXBENCH_LLM_MODEL", "gpt-6-astra")
-        self.reasoning_effort = os.environ.get("DEXBENCH_LLM_REASONING_EFFORT", "low")
+        self.base_url = _llm_setting("BASE_URL", "https://api.openai.com/v1")
+        self.api_key = _llm_setting("API_KEY") or os.environ.get("OPENAI_API_KEY")
+        self.model = _llm_setting("MODEL", "gpt-6-astra")
+        self.reasoning_effort = _llm_setting("REASONING_EFFORT", "low")
         self.last_trace: dict[str, Any] = {}
         if not self.api_key:
             raise ValueError(
-                "Set DEXBENCH_LLM_API_KEY (or OPENAI_API_KEY) to use the example LLM policy"
+                "Set XEBENCH_LLM_API_KEY (or OPENAI_API_KEY) to use the example LLM policy"
             )
 
     def reset(self, task: str, trial_id: str) -> None:

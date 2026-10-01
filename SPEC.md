@@ -1,12 +1,32 @@
-# RC DexBench Interface and Scoring Specification
+# RC XEbench Interface and Scoring Specification
 
 Version 0.1.0
 
-This repository implements the benchmark workflow and reference scorers from the RC DexBench operating specification. Physical task definitions are fixed before a baseline run. Record actual dimensions, model numbers, settings, calibration, and photos in each hardware/session record. Do not tune the task after inspecting results.
+This repository implements the benchmark workflow and reference scorers from the RC XEbench operating specification. Physical task definitions are fixed before a baseline run. Record actual dimensions, model numbers, settings, calibration, and photos in each hardware/session record. Do not tune the task after inspecting results.
+
+## Cross-embodiment evaluation
+
+XEbench's cross-embodiment statistic is the population standard deviation of a single policy's success rates over eligible robot bodies, in percentage points:
+
+```text
+SR_body (%) = 100 × successes_body / valid_trials_body
+mean_SR = (1 / B) × sum(SR_body)
+σ_body = sqrt((1 / B) × sum((SR_body − mean_SR)²))
+```
+
+Here `B` is the number of eligible embodiments in one controlled cohort. Report `σ_body`, `mean_SR`, `B`, and the included embodiment IDs together. Each body has equal weight; pooling all trials across bodies gives a different statistic. Lower σ means less variation, and cannot establish good performance without high mean success.
+
+The RC publication rules proposed on the [evaluation page](https://dexterity.roboticscenter.ai/benchmark) require at least three eligible bodies and 40 valid trials per body × policy × task cell. A cell may combine repeated complete protocol rounds within the same cohort. Standard community rounds remain 20 trials for keyboard/piano or 30 for pick and place; a single complete round is insufficient for this summary.
+
+For a comparison across policies, use the intersection of eligible bodies across every policy column in the selected controller group. Never aggregate different tasks, protocol revisions, scene sets, or cohorts. Record the fixed checkpoint, task settings, time cap, scoring rules, calibration, observation setup, exclusions, adapter, and session/episode structure in the cohort manifest. Disclose any body-specific fine-tuning or checkpoint change as an adapted-policy comparison. Pick-and-place embodiments include both the arm and hand; hand-only tasks include the mounted hand and fixture.
+
+Policy failures and timeouts stay in the valid-trial denominator. Justified hardware-invalid trials are excluded and reported separately. Publish per-body counts, uncertainty, and full-run recordings so the summary can be reproduced. Meeting the trial floor does not establish statistical significance. Mean reported successful-trial completion time cannot substitute for human-relative throughput, which requires matched full-run timing and a human reference on the same embodiment.
+
+The current command-line toolkit scores individual runs. The evaluation page computes cohort summaries; a run's `success_rate` is its per-body outcome, not a cross-embodiment σ. Preview and XE-Table demonstration values do not establish measured cross-embodiment results.
 
 ## Core interfaces
 
-An adapter connects DexBench to a robot or simulator. A policy reads an `Observation` and returns one bounded `Action` or `None` to stop. Adapter event timestamps and action timestamps use the same monotonic clock.
+An adapter connects XEbench to a robot or simulator. A policy reads an `Observation` and returns one bounded `Action` or `None` to stop. Adapter event timestamps and action timestamps use the same monotonic clock.
 
 ```python
 class Adapter:
@@ -25,7 +45,7 @@ class Policy:
     def act(self, observation: Observation) -> Action | None: ...
 ```
 
-The Python versions of these contracts live in `dexbench.models`. A hardware adapter factory is loaded with `--adapter package.module:factory` and is called with the session metadata dictionary. `execute` must enforce that policy actions remain within the rig's configured limits. Adapters may expose only the observations/actions supported by the hardware; they should not fabricate sensor events.
+The Python versions of these contracts live in `xebench.models`. A hardware adapter factory is loaded with `--adapter package.module:factory` and is called with the session metadata dictionary. `execute` must enforce that policy actions remain within the rig's configured limits. Adapters may expose only the observations/actions supported by the hardware; they should not fabricate sensor events.
 
 ## Event format
 
@@ -54,7 +74,7 @@ Common topics:
 | `/glove/*` | glove skeleton, tactile, EMF, IMU | Operator glove |
 | `/camera/*` | image data and camera timestamps | Camera adapter |
 | `/scorer/tray_state` | `object_inside`, `stable_duration_s` | Depth + color scorer |
-| `/dexbench/actions` | policy action and step | DexBench runner |
+| `/dexbench/actions` | policy action and step | XEbench runner |
 | `/dexbench/policy_trace` | model, request, response | Example LLM policy |
 
 Scorers require these event fields: keyboard `key` values are uppercase `LEFT`, `DOWN`, or `RIGHT`; MIDI `note` and `velocity` are integers; `/hand/command` uses `finger` and `pressed`; `/hand/state` uses `open` as a boolean; `/scorer/tray_state` uses boolean `object_inside` and numeric `stable_duration_s`. Put fields inside the event's `data` object. Emit `/dexbench/invalid` with a `reason` string for hardware faults.
