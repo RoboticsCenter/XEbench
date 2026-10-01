@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/RoboticsCenter/dexbench/blob/main/results/submission.schema.json",
+  "$id": "https://github.com/RoboticsCenter/XEbench/blob/main/results/submission.schema.json",
   "title": "XEbench public leaderboard submission",
   "description": "Public, community-reported result envelope accepted by the Robotics Center Dexterity leaderboard.",
   "type": "object",

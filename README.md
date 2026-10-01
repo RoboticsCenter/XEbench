@@ -5,8 +5,8 @@
 # RC XEbench — Cross-Embodiment Benchmark
 
 <p align="center">
-  <a href="https://github.com/RoboticsCenter/dexbench/actions/workflows/lint.yml"><img src="https://github.com/RoboticsCenter/dexbench/actions/workflows/lint.yml/badge.svg?branch=main" alt="CI status"></a>
-  <a href="https://github.com/RoboticsCenter/dexbench/actions/workflows/lint.yml"><img src="https://github.com/RoboticsCenter/dexbench/actions/workflows/lint.yml/badge.svg?branch=main&amp;job=docs" alt="Documentation check status"></a>
+  <a href="https://github.com/RoboticsCenter/XEbench/actions/workflows/lint.yml"><img src="https://github.com/RoboticsCenter/XEbench/actions/workflows/lint.yml/badge.svg?branch=main" alt="CI status"></a>
+  <a href="https://github.com/RoboticsCenter/XEbench/actions/workflows/lint.yml"><img src="https://github.com/RoboticsCenter/XEbench/actions/workflows/lint.yml/badge.svg?branch=main&amp;job=docs" alt="Documentation check status"></a>
   <img src="https://img.shields.io/badge/status-alpha-orange" alt="Alpha status">
   <img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="Python 3.10 and newer">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-green.svg" alt="Apache 2.0 license"></a>
@@ -71,7 +71,7 @@ Each square GIF shows its matching task. The photo shows the robot hand and arm 
 Install from a fresh checkout with Python 3.10 or later:
 
 ```bash
-git clone https://github.com/RoboticsCenter/dexbench.git xebench
+git clone https://github.com/RoboticsCenter/XEbench.git xebench
 cd xebench
 python -m venv .venv
 source .venv/bin/activate
@@ -162,7 +162,7 @@ Released under the Apache License 2.0. See [LICENSE](LICENSE).
   author = {{Robotics Center}},
   title = {RC XEbench: An Open Cross-Embodiment Benchmark for Robotic Manipulation},
   year = {2026},
-  url = {https://github.com/RoboticsCenter/dexbench},
+  url = {https://github.com/RoboticsCenter/XEbench},
   version = {0.1.0},
   license = {Apache-2.0}
 }
