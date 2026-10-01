@@ -6,5 +6,5 @@ authors:
   - name: Robotics Center
 version: 0.1.0
 date-released: 2026-09-27
-url: "https://github.com/RoboticsCenter/dexbench"
+url: "https://github.com/RoboticsCenter/XEbench"
 license: Apache-2.0

@@ -19,8 +19,8 @@ xebench = "xebench.cli:main"
 dexbench = "xebench.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/RoboticsCenter/dexbench"
-Issues = "https://github.com/RoboticsCenter/dexbench/issues"
+Homepage = "https://github.com/RoboticsCenter/XEbench"
+Issues = "https://github.com/RoboticsCenter/XEbench/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/xebench", "src/dexbench"]
